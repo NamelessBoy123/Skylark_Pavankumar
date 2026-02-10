@@ -1,53 +1,41 @@
 import React, { useState } from "react";
+import Dashboard from "./components/Dashboard";
+import PilotList from "./components/PilotList";
+import DroneList from "./components/DroneList";
+import AssignmentList from "./components/AssignmentList";
+import Chat from "./components/Chat";
+import "./styles.css";
 
-function App() {
-  const [messages, setMessages] = useState([{ role: "system", content: "How can I help coordinate your drone operations today?" }]);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const sendMessage = async () => {
-    if (!input.trim()) return;
-    const newMessages = [...messages, { role: "user", content: input }];
-    setMessages(newMessages);
-    setInput("");
-    setLoading(true);
-
-    try {
-      const res = await fetch("/api/agent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input, history: newMessages }),
-      });
-      const data = await res.json();
-      setMessages([...newMessages, { role: "ai", content: data.reply || "No response." }]);
-    } catch (err) {
-      setMessages([...newMessages, { role: "ai", content: "Sorry, there was an error connecting to the backend." }]);
-    }
-    setLoading(false);
-  };
+export default function App() {
+  const [view, setView] = useState<"dashboard" | "pilots" | "drones" | "assignments">("dashboard");
 
   return (
-    <div style={{ maxWidth: 600, margin: "2rem auto" }}>
-      <h2>Drone Operations Coordinator AI</h2>
-      <div style={{ minHeight: 200, border: "1px solid #ccc", padding: 16, marginBottom: 16 }}>
-        {messages.map((msg, idx) => (
-          <div key={idx} style={{ color: msg.role === "user" ? "#333" : msg.role === "ai" ? "#0078d4" : "#888" }}>
-            <b>{msg.role}:</b> {msg.content}
-          </div>
-        ))}
-        {loading && <div style={{ color: "#aaa" }}>AI is typing...</div>}
+    <div className="app-root">
+      <header className="topbar">
+        <h1>Skylark — Drone Operations Coordinator</h1>
+      </header>
+
+      <div className="container">
+        <nav className="sidebar">
+          <button className={view === "dashboard" ? "active" : ""} onClick={() => setView("dashboard")}>Overview</button>
+          <button className={view === "pilots" ? "active" : ""} onClick={() => setView("pilots")}>Pilots</button>
+          <button className={view === "drones" ? "active" : ""} onClick={() => setView("drones")}>Drones</button>
+          <button className={view === "assignments" ? "active" : ""} onClick={() => setView("assignments")}>Assignments</button>
+        </nav>
+
+        <main className="main">
+          {view === "dashboard" && <Dashboard />}
+          {view === "pilots" && <PilotList />}
+          {view === "drones" && <DroneList />}
+          {view === "assignments" && <AssignmentList />}
+        </main>
+
+        <aside className="chat-panel">
+          <Chat />
+        </aside>
       </div>
-      <input
-        style={{ width: "80%" }}
-        value={input}
-        onChange={e => setInput(e.target.value)}
-        onKeyDown={e => e.key === "Enter" && sendMessage()}
-        placeholder="Type your request..."
-        disabled={loading}
-      />
-      <button onClick={sendMessage} disabled={loading}>Send</button>
+
+      <footer className="footer">© Skylark Drones — Coordinator UI</footer>
     </div>
   );
 }
-
-export default App;

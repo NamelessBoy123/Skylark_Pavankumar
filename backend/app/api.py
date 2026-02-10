@@ -1,11 +1,9 @@
 from fastapi import APIRouter, Query, HTTPException, Request
 from .google_sheets import (
     get_pilots, update_pilot_status, get_drones, update_drone_status,
-    get_assignments, sync_assignment, urgent_reassignment
+    get_assignments, sync_assignment, urgent_reassignment, get_projects
 )
-from .assignment_logic import (
-    match_pilot_to_project, detect_conflicts
-)
+from .assignment_logic import match_pilot_to_project, detect_conflicts
 
 router = APIRouter()
 
@@ -40,6 +38,10 @@ async def conflicts():
 @router.post("/urgent-reassign")
 async def urgent_reassign(project_id: str):
     return await urgent_reassignment(project_id)
+
+@router.get("/projects")
+async def projects():
+    return await get_projects()
 
 @router.post("/agent")
 async def agent_endpoint(request: Request):
