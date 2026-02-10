@@ -10,11 +10,6 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
-    services:
-      docker:
-        image: docker:20.10.7
-        options: --privileged
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -27,6 +22,14 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Create .env file
+        run: |
+          cat > .env << EOF
+          MONGO_URI=${{ secrets.MONGO_URI }}
+          PILOT_SHEET_ID=${{ secrets.PILOT_SHEET_ID }}
+          DRONE_SHEET_ID=${{ secrets.DRONE_SHEET_ID }}
+          EOF
 
       - name: Build and push backend image
         uses: docker/build-push-action@v4
@@ -41,27 +44,6 @@ jobs:
           context: ./frontend
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/skylark-frontend:latest
-
-      - name: Upload .env for backend
-        uses: SpicyPizza/create-envfile@v2
-        with:
-          envkey_MONGO_URI: ${{ secrets.MONGO_URI }}
-          envkey_PILOT_SHEET_ID: ${{ secrets.PILOT_SHEET_ID }}
-          envkey_DRONE_SHEET_ID: ${{ secrets.DRONE_SHEET_ID }}
-          directory: ./backend
-
-      - name: Install backend dependencies and run tests
-        run: |
-          cd backend
-          pip install -r requirements.txt
-          # pytest or other test runner if you add tests
-
-      - name: Install frontend dependencies and run tests
-        run: |
-          cd frontend
-          npm install
-          npm run build
-          # npm test if you add tests
 
       - name: Deploy to AWS (ECS/EC2)
         run: |

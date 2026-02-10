@@ -1,0 +1,6 @@
+model,serial_number,capabilities,current_assignment,status,current_location
+DJI Phantom 4,SN001,"4K Video, 30min Flight",Project A,Available,New York
+Parrot Anafi,SN002,"4K Video, 26min Flight",Project B,Available,Los Angeles
+DJI Air 2S,SN003,"20MP Camera, 31min Flight",None,Maintenance,Chicago
+Auterion Skynode,SN004,"Advanced Navigation",None,Available,New York
+DJI Mini 3,SN005,"2.7K Video, 38min Flight",None,Available,Los Angeles

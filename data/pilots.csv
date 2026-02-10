@@ -1,0 +1,6 @@
+name,skill_level,certifications,drone_experience,current_location,current_assignment,status
+Alice Johnson,Advanced,"Part 107, Advanced Drone",5,New York,Project A,Available
+Bob Smith,Intermediate,"Part 107",3,Los Angeles,Project B,Available
+Charlie Brown,Beginner,"Part 107",1,Chicago,None,On Leave
+Diana Prince,Advanced,"Part 107, Commercial",7,New York,None,Available
+Eve Davis,Intermediate,"Part 107",2,Los Angeles,None,Unavailable

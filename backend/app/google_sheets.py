@@ -1,6 +1,4 @@
 import os
-import gspread
-from google.oauth2.service_account import Credentials
 from motor.motor_asyncio import AsyncIOMotorClient
 from dotenv import load_dotenv
 
@@ -10,45 +8,58 @@ MONGO_URI = os.getenv("MONGO_URI")
 client = AsyncIOMotorClient(MONGO_URI)
 db = client["skylark"]
 
-SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
-CREDS = Credentials.from_service_account_file(os.getenv("GOOGLE_APPLICATION_CREDENTIALS"), scopes=SCOPES)
-gc = gspread.authorize(CREDS)
-
-PILOT_SHEET = os.getenv("PILOT_SHEET_ID")
-DRONE_SHEET = os.getenv("DRONE_SHEET_ID")
-
 async def get_pilots(skill=None, certification=None, location=None):
-    # For demo, return mock data
-    return [
-        {"name": "Alice", "status": "Available"},
-        {"name": "Bob", "status": "On Leave"},
-    ]
+    query = {}
+    if skill:
+        query["skill_level"] = skill
+    if certification:
+        query["certifications"] = {"$in": [certification]}
+    if location:
+        query["current_location"] = location
+    
+    pilots = await db.pilots.find(query).to_list(length=None)
+    return pilots
 
 async def update_pilot_status(name, status):
-    # Update in MongoDB and Google Sheets
-    # ...implement update logic...
-    return {"success": True}
+    result = await db.pilots.update_one(
+        {"name": name},
+        {"$set": {"status": status}}
+    )
+    return {"success": result.modified_count > 0}
 
 async def get_drones(capability=None, location=None):
-    # For demo, return mock data
-    return [
-        {"model": "DJI Phantom", "status": "Available"},
-        {"model": "Parrot Anafi", "status": "Maintenance"},
-    ]
+    query = {}
+    if capability:
+        query["capabilities"] = {"$in": [capability]}
+    if location:
+        query["current_location"] = location
+    
+    drones = await db.drones.find(query).to_list(length=None)
+    return drones
 
 async def update_drone_status(serial, status):
-    # Update in MongoDB and Google Sheets
-    # ...implement update logic...
-    return {"success": True}
+    result = await db.drones.update_one(
+        {"serial_number": serial},
+        {"$set": {"status": status}}
+    )
+    return {"success": result.modified_count > 0}
 
 async def get_assignments():
-    # Query assignments from MongoDB
-    return []
+    assignments = await db.assignments.find({}).to_list(length=None)
+    return assignments
+
+async def get_projects():
+    projects = await db.projects.find({}).to_list(length=None)
+    return projects
 
 async def sync_assignment(assignment):
-    # Sync assignment to Google Sheets
-    return {"success": True}
+    result = await db.assignments.insert_one(assignment)
+    return {"success": True, "id": str(result.inserted_id)}
 
 async def urgent_reassignment(project_id):
-    # Find replacement pilot/drone and update assignment
+    project = await db.projects.find_one({"_id": project_id})
+    if not project:
+        return {"success": False, "message": "Project not found"}
+    
+    # Find available pilot/drone and reassign
     return {"success": True, "message": "Urgent reassignment handled"}
