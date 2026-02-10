@@ -1,10 +1,10 @@
-FROM node:20 AS builder
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 COPY package*.json ./
-RUN npm install --legacy-peer-deps
+RUN npm ci
 COPY . .
-RUN npm run build
+RUN CI=false npm run build
 
 FROM nginx:alpine
 COPY --from=builder /app/build /usr/share/nginx/html
